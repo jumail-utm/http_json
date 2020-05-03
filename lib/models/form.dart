@@ -20,28 +20,43 @@ class Scale {
   Map<String, dynamic> toJson() => {'value': value, 'title': title};
 }
 
-List<Criterion> criteria = [
-  Criterion(
-      title: 'Interaction',
-      description: 'Degree of interaction with other members'),
-  Criterion(
-      title: 'Commitment',
-      description: 'Degree of participation to the project execution'),
-  Criterion(
-      title: 'Effort',
-      description:
-          'The amount of effort and work contributed to the project outcome'),
-  Criterion(
-      title: 'Adaptability', description: 'Ease of adapting to the group'),
-  Criterion(
-      title: 'Personality',
-      description: 'Degree of compromisation between group members'),
-];
+// Hard-coded parsed JSON, for testing purposes
 
-List<Scale> scales = [
-  Scale(value: 4, title: 'Excellent'),
-  Scale(value: 3, title: 'Good'),
-  Scale(value: 2, title: 'Fair'),
-  Scale(value: 1, title: 'Poor'),
-  Scale(value: 0, title: 'Not at all')
-];
+Map<String, dynamic> _json = {
+  "scales": [
+    {"title": "Excellent", "value": 4},
+    {"title": "Good", "value": 3},
+    {"title": "Fair", "value": 2},
+    {"title": "Poor", "value": 1},
+    {"title": "Not at all", "value": 0}
+  ],
+  "criteria": [
+    {
+      "title": "Interaction",
+      "description": "Degree of interaction with other members"
+    },
+    {
+      "title": "Commitment",
+      "description": "Degree of participation to the project execution"
+    },
+    {
+      "title": "Effort",
+      "description":
+          "The amount of effort and work contributed to the project outcome"
+    },
+    {"title": "Adaptability", "description": "Ease of adapting to the group"},
+    {
+      "title": "Personality",
+      "description": "Degree of compromisation between group members"
+    }
+  ]
+};
+
+// Testing the fromJson() method
+
+List<Scale> scales =
+    (_json['scales'] as List).map((item) => Scale.fromJson(item)).toList();
+
+List<Criterion> criteria = (_json['criteria'] as List)
+    .map((item) => Criterion.fromJson(item))
+    .toList();
