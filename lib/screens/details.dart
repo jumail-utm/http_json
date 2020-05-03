@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/assessment.dart';
-import '../models/form.dart';
+import '../models/data.dart';
 
 class DetailsScreen extends StatelessWidget {
   final Assessment assessment;

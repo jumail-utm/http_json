@@ -1,35 +1,42 @@
+// Fetching JSON data from the internet using the http package.
+// For convinience, in this demo all data (i.e. assessements, criteria and scales) are consilidated in a single JSON data, so that we fetch only once
+// The fetching process is done in the main() program
+// Fetched data are stored in global variables. It is not a recommended to use global. However, we use here only for demonstration purpose.
+
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 import 'assessment.dart';
+import 'form.dart';
 
-// Hard-coded parsed JSON, for testing purposes
+// Global variables to store the fetched data from the interenet
+GroupMember evaluator;
+List<Assessment> assessments;
+List<Scale> scales;
+List<Criterion> criteria;
 
-Map<String, dynamic> _json = {
-  "evaluator": {"shortName": "Abdullah", "fullName": "Abdullah Tajuddin"},
-  "assessments": [
-    {
-      "member": {"shortName": "Abdullah", "fullName": "Abdullah Tajuddin"},
-      "points": [4, 2, 3, 2, 4]
-    },
-    {
-      "member": {
-        "shortName": "Aisyah",
-        "fullName": "Siti Nur Aisyah Binti Ahmad Kamal"
-      },
-      "points": [3, 3, 3, 3, 3]
-    },
-    {
-      "member": {"shortName": "Jailani", "fullName": "Ahmad Jailani Bin Saad"},
-      "points": [2, 1, 3, 2, 1]
-    },
-    {
-      "member": {"shortName": "Amalina", "fullName": "Amalina Dasuki"},
-      "points": [4, 4, 4, 4, 4]
-    }
-  ],
-};
+// fetchData() - To fetch data from the internet using the http package
+//               The fetched data are stored in global variables (Not recommended approach. This is only for demonstration purpose)
 
-// Testing the fromJson() method
+Future<void> fetchData(String url) async {
+  print('Fetching data from $url');
 
-GroupMember evaluator = GroupMember.fromJson(_json['evaluator']);
-List<Assessment> assessments = (_json['assessments'] as List)
-    .map((item) => Assessment.fromJson(item))
-    .toList();
+  http.Response response = await http.get(url);
+
+  print('Fetching has completed with status code ${response.statusCode}');
+
+  String stringJson = response.body;
+  Map<String, dynamic> _json = json.decode(stringJson);
+
+  evaluator = GroupMember.fromJson(_json['evaluator']);
+  assessments = (_json['assessments'] as List)
+      .map((item) => Assessment.fromJson(item))
+      .toList();
+
+  scales =
+      (_json['scales'] as List).map((item) => Scale.fromJson(item)).toList();
+
+  criteria = (_json['criteria'] as List)
+      .map((item) => Criterion.fromJson(item))
+      .toList();
+}
