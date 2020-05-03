@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../models/form.dart';
 import '../models/assessment.dart';
-import '../models/data.dart';
 
 class DetailsScreen extends StatelessWidget {
   final Assessment assessment;
+  final List<Criterion> criteria;
+  final List<Scale> scales;
 
-  DetailsScreen({this.assessment});
+  DetailsScreen({this.assessment, this.criteria, this.scales});
 
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -66,7 +68,7 @@ class __DropdownButtonState extends State<_DropdownButton> {
   Widget build(BuildContext context) {
     return DropdownButton<int>(
       value: widget.screen.assessment.points[widget.index],
-      items: scales
+      items: widget.screen.scales
           .map(
             (scale) => DropdownMenuItem(
               value: scale.value,

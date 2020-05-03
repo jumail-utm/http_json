@@ -1,13 +1,46 @@
 import 'package:flutter/material.dart';
 
 import '../constants.dart';
+import '../models/form.dart';
 import '../models/assessment.dart';
+import '../models/data.dart' as data;
 
-class SummaryScreen extends StatelessWidget {
-  final GroupMember evaluator;
-  final List assessments;
+// We need to convert SummaryScreen to stateful because we need the initState() method.
 
-  SummaryScreen({this.evaluator, this.assessments});
+class SummaryScreen extends StatefulWidget {
+  @override
+  _SummaryScreenState createState() => _SummaryScreenState();
+}
+
+class _SummaryScreenState extends State<SummaryScreen> {
+  GroupMember evaluator;
+  List<Assessment> assessments = [];
+  List<Criterion> criteria = [];
+  List<Scale> scales = [];
+
+  // Initializing the above lists with empty lists is important to prevent
+  //  null pointer errors during the first time built, as during that time
+  //  the data is not fully fetched yet.
+
+  // An helper method to aid initState(). As initState() cannot have aysnc with it
+  Future<void> _fetchData() async {
+    final _data =
+        await data.fetchData('http://www.mocky.io/v2/5ea539bd3000005900ce2e8f');
+
+    evaluator = _data['evaluator'];
+    assessments = _data['assessments'];
+    scales = _data['scales'];
+    criteria = _data['criteria'];
+
+    setState(
+        () {}); // We need setState() here only to re-build the SummaryScreen
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +53,7 @@ class SummaryScreen extends StatelessWidget {
               style: TextStyle(fontSize: 15),
             ),
             Text(
-              evaluator.fullName,
+              evaluator != null ? evaluator.fullName : '',
               style: const TextStyle(fontSize: 25),
             ),
           ],
@@ -42,7 +75,7 @@ class SummaryScreen extends StatelessWidget {
 
 class _ListTile extends StatefulWidget {
   final int index;
-  final SummaryScreen
+  final _SummaryScreenState
       screen; // A convinience variable to access data from the screen object, so that no need to pass multiple variables
 
   _ListTile({this.index, this.screen});
@@ -53,11 +86,11 @@ class _ListTile extends StatefulWidget {
 
 class __ListTileState extends State<_ListTile> {
   void _navigate() async {
-    final result = await Navigator.pushNamed(
-      context,
-      detailsRoute,
-      arguments: Assessment.copy(widget.screen.assessments[widget.index]),
-    );
+    final result = await Navigator.pushNamed(context, detailsRoute, arguments: {
+      'assessment': Assessment.copy(widget.screen.assessments[widget.index]),
+      'criteria': widget.screen.criteria,
+      'scales': widget.screen.scales
+    });
 
     if (result != null) {
       setState(() => widget.screen.assessments[widget.index] = result);
