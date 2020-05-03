@@ -13,37 +13,43 @@ class SummaryScreen extends StatefulWidget {
 }
 
 class _SummaryScreenState extends State<SummaryScreen> {
+  Future<Map<String, dynamic>> _futureData;
+
+  // Now the following variables only serve as helpers or convinient variables.
+  // So that we don't need to change our previous code so much.
+  // They will be updated in the FutureBuilder (once the fetch process completes)
+
   GroupMember evaluator;
-  List<Assessment> assessments = [];
-  List<Criterion> criteria = [];
-  List<Scale> scales = [];
-
-  // Initializing the above lists with empty lists is important to prevent
-  //  null pointer errors during the first time built, as during that time
-  //  the data is not fully fetched yet.
-
-  // An helper method to aid initState(). As initState() cannot have aysnc with it
-  Future<void> _fetchData() async {
-    final _data =
-        await data.fetchData('http://www.mocky.io/v2/5ea539bd3000005900ce2e8f');
-
-    evaluator = _data['evaluator'];
-    assessments = _data['assessments'];
-    scales = _data['scales'];
-    criteria = _data['criteria'];
-
-    setState(
-        () {}); // We need setState() here only to re-build the SummaryScreen
-  }
+  List<Assessment> assessments;
+  List<Criterion> criteria;
+  List<Scale> scales;
 
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    _futureData =
+        data.fetchData('http://www.mocky.io/v2/5ea539bd3000005900ce2e8f');
   }
 
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder<Map<String, dynamic>>(
+        future: _futureData,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            evaluator = snapshot.data['evaluator'];
+            assessments = snapshot.data['assessments'];
+            criteria = snapshot.data['criteria'];
+            scales = snapshot.data['scales'];
+
+            return _buildMainScreen();
+          }
+
+          return _buildFetchingDataScreen();
+        });
+  }
+
+  Scaffold _buildMainScreen() {
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -53,7 +59,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
               style: TextStyle(fontSize: 15),
             ),
             Text(
-              evaluator != null ? evaluator.fullName : '',
+              evaluator.fullName,
               style: const TextStyle(fontSize: 25),
             ),
           ],
@@ -71,7 +77,22 @@ class _SummaryScreenState extends State<SummaryScreen> {
       ),
     );
   }
-}
+
+  Scaffold _buildFetchingDataScreen() {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            CircularProgressIndicator(),
+            SizedBox(height: 50),
+            Text('Fetching data in progress'),
+          ],
+        ),
+      ),
+    );
+  }
+} // class _SummaryScreenState
 
 class _ListTile extends StatefulWidget {
   final int index;
