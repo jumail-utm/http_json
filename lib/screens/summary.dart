@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../constants.dart';
 import '../models/form.dart';
 import '../models/assessment.dart';
-import '../models/data.dart' as data;
+import '../models/activity.dart';
+import '../services/data_service.dart';
 
-// We need to convert SummaryScreen to stateful because we need the initState() method.
+// We need to convert SummaryScreen to stateful because we need the initState() method
+// to place our dataService call, i.e., the part that responsibles to fetch data from the server.
 
 class SummaryScreen extends StatefulWidget {
   @override
@@ -13,35 +15,37 @@ class SummaryScreen extends StatefulWidget {
 }
 
 class _SummaryScreenState extends State<SummaryScreen> {
-  Future<Map<String, dynamic>> _futureData;
+  Future<Activity> _futureData;
 
   // Now the following variables only serve as helpers or convinient variables.
   // So that we don't need to change our previous code so much.
   // They will be updated in the FutureBuilder (once the fetch process completes)
 
+  String activityName;
   GroupMember evaluator;
   List<Assessment> assessments;
   List<Criterion> criteria;
   List<Scale> scales;
+  double maxScore;
 
   @override
   void initState() {
     super.initState();
-    _futureData =
-        data.fetchData('http://www.mocky.io/v2/5ea539bd3000005900ce2e8f');
+    _futureData = dataService.getActivity(2);
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, dynamic>>(
+    return FutureBuilder<Activity>(
         future: _futureData,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            evaluator = snapshot.data['evaluator'];
-            assessments = snapshot.data['assessments'];
-            criteria = snapshot.data['criteria'];
-            scales = snapshot.data['scales'];
-
+            activityName = snapshot.data.title;
+            evaluator = snapshot.data.evaluator;
+            assessments = snapshot.data.assessments;
+            criteria = snapshot.data.form.criteria;
+            scales = snapshot.data.form.scales;
+            maxScore = (scales.length * scales[0].value).toDouble();
             return _buildMainScreen();
           }
 
@@ -54,8 +58,8 @@ class _SummaryScreenState extends State<SummaryScreen> {
       appBar: AppBar(
         title: Column(
           children: <Widget>[
-            const Text(
-              'Peer and Self Assessement by',
+            Text(
+              activityName,
               style: TextStyle(fontSize: 15),
             ),
             Text(
@@ -114,15 +118,19 @@ class __ListTileState extends State<_ListTile> {
     });
 
     if (result != null) {
-      setState(() => widget.screen.assessments[widget.index] = result);
+      setState(() {
+        widget.screen.assessments[widget.index] = result;
+        Assessment _assessment = result;
+        dataService.updateAssessmentPoints(
+            id: _assessment.id, points: _assessment.points);
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final _percent = widget.screen.assessments[widget.index]
-        .percent(maxScore: 20.0); // The maxScore is to be finalized later
-
+        .percent(maxScore: widget.screen.maxScore);
     return ListTile(
       title: Text(widget.screen.assessments[widget.index].member.shortName),
       subtitle: Text(widget.screen.assessments[widget.index].member.fullName),
