@@ -120,17 +120,18 @@ class __ListTileState extends State<_ListTile> {
 
   @override
   Widget build(BuildContext context) {
+    final _percent = widget.screen.assessments[widget.index]
+        .percent(maxScore: 20.0); // The maxScore is to be finalized later
+
     return ListTile(
       title: Text(widget.screen.assessments[widget.index].member.shortName),
       subtitle: Text(widget.screen.assessments[widget.index].member.fullName),
       trailing: CircleAvatar(
         child: Text(
-          widget.screen.assessments[widget.index].percent.round().toString(),
+          _percent.round().toString(),
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: widget.screen.assessments[widget.index].percent < 50
-            ? Colors.pink
-            : Colors.purple,
+        backgroundColor: _percent < 50 ? Colors.pink : Colors.purple,
       ),
       onTap: () => _navigate(),
     );

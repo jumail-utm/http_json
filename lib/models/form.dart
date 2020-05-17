@@ -1,3 +1,26 @@
+class Form {
+  int id;
+  List<Scale> scales;
+  List<Criterion> criteria;
+
+  Form({this.id, this.criteria, this.scales});
+
+  Form.fromJson(Map<String, dynamic> json)
+      : this(
+            scales: (json['scales'] as List)
+                .map((item) => Scale.fromJson(item))
+                .toList(),
+            criteria: (json['criteria'] as List)
+                .map((item) => Criterion.fromJson(item))
+                .toList());
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'scales': scales,
+        'criteria': criteria,
+      };
+}
+
 class Criterion {
   String title;
   String description;
